@@ -1,0 +1,66 @@
+---
+title: "Comparing Matlab code in Macro"
+author: "Lars Vilhuber"
+date: '2023-03-17'
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+Sys.setenv(NOAWT=TRUE)
+install.packages(c("tm","here"))
+require("tm")
+# directories
+
+basedir <- here::here()
+datadir <- file.path(basedir,"data")
+results <- file.path(basedir,"results")
+
+for ( dir in list(datadir,results)){
+	if (file.exists(dir)){
+	} else {
+	dir.create(file.path(dir))
+	}
+}
+```
+
+## Download the toy corpus
+
+```{r}
+download.file("http://fredgibbs.net/tutorials/downloads/corpus.zip",destfile = file.path(datadir,"corpus.zip"))
+unzip(file.path(datadir,"corpus.zip"),exdir = datadir)
+# this loads all files in a directory
+list.files(datadir)
+
+my.corpus <- Corpus(DirSource(file.path(datadir,"r-corpus")))
+
+```
+
+Hm. That example didn't go far enough. Here's the capsule from `corpustools`:
+
+```{r}
+install.packages(c("corpustools","igraph"))
+require("corpustools")
+require("igraph")
+
+d = data.frame(text = c('a b c d e',
+                        'e f g h i j k',
+                        'a b c'),
+               date = as.POSIXct(c('2010-01-01','2010-01-01','2012-01-01')))
+tc = create_tcorpus(d)
+
+g = compare_documents(tc)
+igraph::get.data.frame(g)
+
+g = compare_documents(tc, measure = 'overlap_pct')
+igraph::get.data.frame(g)
+
+g = compare_documents(tc, date_col = 'date', hour_window = c(0,36))
+igraph::get.data.frame(g)
+```
+
+Not sure how to map this into "proximity", but getting there.
+
+Maybe this: https://www.r-bloggers.com/2019/06/using-cosine-similarity-to-find-matching-documents-a-tutorial-using-senecas-letters-to-his-friend-lucilius/. Or https://stackoverflow.com/questions/70189456/calculating-similarity-between-pairs-of-documents-in-r
